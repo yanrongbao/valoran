@@ -1,0 +1,38 @@
+{
+  "name": "valoran-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "": "./bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "keywords": [
+    "",
+    "mc",
+    "脚手架"
+  ],
+  "author": {
+    "name": "yanrongbao",
+    "email": "yanrongbao@163.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "commander": "^9.0.0"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "chalk": "^4.1.2",
+    "download-git-repo": "^3.0.2",
+    "figlet": "^1.5.0",
+    "fs-extra": "^10.0.1",
+    "inquirer": "^8.2.1",
+    "ora": "^5.4.0"
+  }
+}
