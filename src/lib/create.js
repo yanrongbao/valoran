@@ -1,8 +1,8 @@
 // lib/create.js
-const path = require('path')
-const fs = require('fs-extra')
-const inquirer = require('inquirer')
-const Generator = require('./Generator')
+const path = require('path');
+const fs = require('fs-extra');
+const inquirer = require('inquirer');
+const Generator = require('./Generator');
 
 module.exports = async function (name, options) {
     // 验证是否正常取到值
@@ -18,10 +18,10 @@ module.exports = async function (name, options) {
     if (fs.existsSync(targetDir)) {
         // 是否为强制创建？
         if (options.force) {
-            await fs.remove(targetDir)
+            await fs.remove(targetDir);
         } else {
             // TODO：询问用户是否确定要覆盖
-            let { action } = await inquirer.prompt([
+            const { action } = await inquirer.prompt([
                 {
                     name: 'action',
                     type: 'list',
@@ -29,21 +29,21 @@ module.exports = async function (name, options) {
                     choices: [
                         {
                             name: 'OverWirte',
-                            value: 'overwrite'
+                            value: 'overwrite',
                         },
                         {
                             name: 'Cancel',
-                            value: false
-                        }
-                    ]
-                }
-            ])
+                            value: false,
+                        },
+                    ],
+                },
+            ]);
             if (!action) {
                 return;
-            } else if (action === 'overwrite') {
+            } if (action === 'overwrite') {
                 // 移除已存在的目录
-                console.log(`\r\nRemoving...`)
-                await fs.remove(targetDir)
+                console.log('\r\nRemoving...');
+                await fs.remove(targetDir);
             }
         }
     }
@@ -51,5 +51,5 @@ module.exports = async function (name, options) {
     // 创建项目
     const generator = new Generator(name, targetDir);
     // 开始创建项目
-    generator.create()
-}
+    generator.create();
+};

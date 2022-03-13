@@ -1,11 +1,11 @@
 // lib/Generator.js
-const ora = require('ora')
-const path = require('path')
-const { getRepoList, getTagList } = require('./http')
-const chalk = require('chalk')
-const inquirer = require('inquirer')
-const util = require('util')
-const downloadGitRepo = require('download-git-repo') // 不支持 Promise
+const ora = require('ora');
+const path = require('path');
+const chalk = require('chalk');
+const inquirer = require('inquirer');
+const util = require('util');
+const downloadGitRepo = require('download-git-repo'); // 不支持 Promise
+const { getRepoList, getTagList } = require('./http');
 
 // 添加加载动画
 const wrapLoading = async (fn, message, ...args) => {
@@ -18,13 +18,14 @@ const wrapLoading = async (fn, message, ...args) => {
         // 执行传入方法 fn
         const result = await fn(...args);
         // 状态为修改为成功
-        spinner.succeed()
+        spinner.succeed();
         return result;
     } catch (error) {
         // 状态为修改为失败
-        spinner.fail('Request failed, refetch ...')
+        spinner.fail('Request failed, refetch ...');
     }
-}
+    return true;
+};
 
 class Generator {
     constructor(name, targetDir) {
@@ -35,19 +36,20 @@ class Generator {
         // 对 download-git-repo 进行 promise 化改造
         this.downloadGitRepo = util.promisify(downloadGitRepo);
     }
+
     // 下载远程模板
     // 1）拼接下载地址
     // 2）调用下载方法
     async download(repo, tag) {
         // 1）拼接下载地址
-        const requestUrl = `zhurong-cli/${repo}${tag ? '#' + tag : ''}`;
+        const requestUrl = `zhurong-cli/${repo}${tag ? `#${tag}` : ''}`;
         // 2）调用下载方法
         await wrapLoading(
             this.downloadGitRepo,
             'waiting download template', // 加载提示信息
             requestUrl, // 参数1: 下载地址
-            path.resolve(process.cwd(), this.targetDir)// 参数2: 创建位置
-        )
+            path.resolve(process.cwd(), this.targetDir), // 参数2: 创建位置
+        );
     }
 
     // 获取用户选择的模板
@@ -55,21 +57,22 @@ class Generator {
     // 2）用户选择自己新下载的模板名称
     // 3）return 用户选择的repo
 
-    async getRepo() {
+    static async getRepo() {
         // 1）从远程拉取模板数据
-        const repoList = await wrapLoading(getRepoList, 'waiting fetch template')
+        const repoList = await wrapLoading(getRepoList, 'waiting fetch template');
         if (!repoList) return;
 
         // 过滤我们需要的模板名称
-        const repos = repoList.map(item => item.name)
+        const repos = repoList.map((item) => item.name);
         // 2）用户选择自己新下载的模板名称
 
         const { repo } = await inquirer.prompt({
             name: 'repo',
             type: 'list',
             choices: repos,
-            message: 'Please choose a template to create project'
-        })
+            message: 'Please choose a template to create project',
+        });
+        // eslint-disable-next-line consistent-return
         return repo;
     }
 
@@ -78,12 +81,12 @@ class Generator {
     // 2）用户选择自己的需要下载的tag
     // 3）return 用户选择的tag
 
-    async getTag(repo) {
+    static async getTag(repo) {
         // 1) 基于repo，获取远程的tag列表
-        const tags = await wrapLoading(getTagList, 'waiting fetch tag', repo)
-        if (!tags) return
+        const tags = await wrapLoading(getTagList, 'waiting fetch tag', repo);
+        if (!tags) return;
         // 过来我们需要的tag名称
-        const tagList = tags.map(item => item.name)
+        const tagList = tags.map((item) => item.name);
 
         // 2) 用户选择自己需要的tag
 
@@ -91,30 +94,31 @@ class Generator {
             name: 'tag',
             type: 'list',
             choices: tagList,
-            message: 'Place choose a tag to create project'
-        })
+            message: 'Place choose a tag to create project',
+        });
         // 3）return 用户选择的 tag
+        // eslint-disable-next-line consistent-return
         return tag;
     }
+
     // 核心创建逻辑
     // 1）获取模板名称
     // 2）获取 tag 名称
     // 3）下载模板到模板目录
     async create() {
         // 1）获取模板名称
-        const repo = await this.getRepo()
+        const repo = await this.getRepo();
         // console.log('用户选择了，repo=' + repo)
         // 2）获取tag 名称
-        const tag = await this.getTag(repo)
+        const tag = await this.getTag(repo);
         // console.log('用户选择了，repo=' + repo + '，tag=' + tag)
         // 3）下载模板到模板目录
-        await this.download(repo, tag)
+        await this.download(repo, tag);
         // 4）模板使用提示
-        console.log(`\r\nSuccessfully created project ${chalk.cyan(this.name)}`)
-        console.log(`\r\n  cd ${chalk.cyan(this.name)}`)
-        console.log('\r\n  npm install')
-        console.log('\r\n  npm run dev\r\n')
-
+        console.log(`\r\nSuccessfully created project ${chalk.cyan(this.name)}`);
+        console.log(`\r\n  cd ${chalk.cyan(this.name)}`);
+        console.log('\r\n  npm install');
+        console.log('\r\n  npm run dev\r\n');
     }
 }
 
